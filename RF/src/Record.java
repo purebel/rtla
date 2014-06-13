@@ -40,8 +40,8 @@ public class Record {
 		// TODO Auto-generated method stub
 		List<Record> record_q = new ArrayList<Record>();
 		try {
-			FileInputStream fstream = new FileInputStream(
-					"/Users/qiuzheng/Documents/Training/TTAP/RT proj/event_movement_archive copy.csv");
+			FileInputStream fstream = new FileInputStream("event_movement_archive.csv");
+//			FileInputStream fstream = new FileInputStream("event_movement_archive copy.csv");
 			DataInputStream in = new DataInputStream(fstream);
 			BufferedReader br = new BufferedReader(new InputStreamReader(in));
 
@@ -69,6 +69,7 @@ public class Record {
 			Integer currentLineIsEmpty=1;
 			Integer nextLineIsEmpty=1;
 			Integer wcnt;
+			Integer lineCnt=0;
 			
 			for(wcnt=0; wcnt<currentLine.length(); wcnt++) {
 				if(Character.isDigit(currentLine.charAt(wcnt))) {
@@ -83,6 +84,7 @@ public class Record {
 
 			while (currentLineIsEmpty==0) {
 
+				lineCnt++;
 				coor = currentLine.split(",");
 				
 				// get Timestamp
@@ -169,10 +171,11 @@ public class Record {
 						currentLineIsEmpty=0;
 					}					
 				}
+				System.out.println("----lineCnt=" + lineCnt);
 			}
 
 		    
-			System.out.println("!!CurrentLint is null!!");
+			System.out.println("----Finish file handling---. lineCnt=" + lineCnt);
 
 
 			in.close();
@@ -193,8 +196,8 @@ public class Record {
 		    Integer second, minute, hour;
 		    GregorianCalendar date=new GregorianCalendar();
 		      
-//			URL url = new URL("http://10.140.44.27/");
-		    URL url = new URL("http://www.google.com.hk");
+			URL url = new URL("http://10.140.44.27/");
+//		    URL url = new URL("http://www.google.com.hk");
 
 			HttpURLConnection hc = (HttpURLConnection) url.openConnection();
 			hc.setDoOutput(true);
@@ -203,7 +206,7 @@ public class Record {
 			OutputStreamWriter out=new OutputStreamWriter(hc.getOutputStream());
 			
 		      System.out.println("New outputstreamwriter");			
-			while(i<2) {
+			while(i<2) {//TODO: loop according to record_q.size
 			  Record item=record_q.get(i);
 			  Integer waitTime=item.tsDelta*1000;
 			  data="";
