@@ -40,8 +40,8 @@ public class Record {
 		// TODO Auto-generated method stub
 		List<Record> record_q = new ArrayList<Record>();
 		try {
-			FileInputStream fstream = new FileInputStream("event_movement_archive.csv");
-//			FileInputStream fstream = new FileInputStream("event_movement_archive copy.csv");
+//			FileInputStream fstream = new FileInputStream("event_movement_archive.csv");
+			FileInputStream fstream = new FileInputStream("event_movement_archive copy.csv");
 			DataInputStream in = new DataInputStream(fstream);
 			BufferedReader br = new BufferedReader(new InputStreamReader(in));
 
@@ -188,16 +188,14 @@ public class Record {
 			System.out.println("-----Start HTTP handling--------");
 			System.out.println("record_q.size=" + record_q.size());
 			Integer i=0;
-		    DateFormat df = new SimpleDateFormat("dd/MM/yy HH:mm:ss");
-		    Date dateobj = new Date();
+
 			String data="";
 			StringBuffer databuf;
 			  
-		    Integer second, minute, hour;
-		    GregorianCalendar date=new GregorianCalendar();
 		      
-			URL url = new URL("http://10.140.44.27/");
+//			URL url = new URL("http://10.140.44.27/");
 //		    URL url = new URL("http://www.google.com.hk");
+			URL url = new URL("http://54.86.168.77");
 
 			HttpURLConnection hc = (HttpURLConnection) url.openConnection();
 			hc.setDoOutput(true);
@@ -241,31 +239,22 @@ public class Record {
 
 
 			  
-			  BufferedReader reader=new BufferedReader(new InputStreamReader(hc.getInputStream()));//new
-			  StringBuilder sb=new StringBuilder();
-			  String line=null;
-			  while((line=reader.readLine()) != null) {
+//			  BufferedReader reader=new BufferedReader(new InputStreamReader(hc.getInputStream()));//new
+//			  StringBuilder sb=new StringBuilder();
+//			  String line=null;
+//			  while((line=reader.readLine()) != null) {
 				  
-				  sb.append(line+"\n");
-			  }
-			  String test=sb.toString();
+//				  sb.append(line+"\n");
+//			  }
+//			  String test=sb.toString();
 
 		      System.out.println("-----Finish out.write--------" + waitTime);
-
-		      System.out.println(df.format(dateobj));
-	
-		      second = date.get(Calendar.SECOND);
-		      minute = date.get(Calendar.MINUTE);
-		      hour = date.get(Calendar.HOUR);
-		      System.out.println("Time:" + hour+":"+minute+":"+second);
 		     
-		      Thread.currentThread().sleep(3000);//waitTime);
-		      second = date.get(Calendar.SECOND);
-		      minute = date.get(Calendar.MINUTE);
-		      hour = date.get(Calendar.HOUR);
-		      System.out.println("Time:" + hour+":"+minute+":"+second);
+		      System.out.println(new Date());
+		      Thread.sleep(3000);//waitTime);
+
 		      System.out.println("-----Done wait--------");
-		      System.out.println(df.format(dateobj));
+		      System.out.println(new Date());
 			  
 			  i++;
 			}
