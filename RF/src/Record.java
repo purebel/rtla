@@ -115,7 +115,7 @@ public class Record {
 					System.out.println("First line mac is :" + coor[1]);					System.out.println("coorx_q.size=" + coorx_q.size());
 					System.out.println("coorx_q last item=" + coorx_q.get(coorx_q.size()-1));
 					// push to the same q
-				} else if ((hour == lastHour) && (min == lastMin)
+/*				} else if ((hour == lastHour) && (min == lastMin)
 						&& (sec == lastSec)) {
 					coorx_q.add(coor[5]);
 					coory_q.add(coor[6]);
@@ -123,7 +123,7 @@ public class Record {
 					System.out.println("Push Coordx is :" + coor[5]);
 					System.out.println("Push Coordy is :" + coor[6]);
 					// push the last record and create new record.
-				} else {
+*/				} else {
 					secDelta = (hour - lastHour) * 3600 + (min - lastMin) * 60
 							+ (sec - lastSec);
 
@@ -193,9 +193,9 @@ public class Record {
 			StringBuffer databuf;
 			  
 		      
-//			URL url = new URL("http://10.140.44.27/");
+//			URL url = new URL("http://10.140.44.111/");
 //		    URL url = new URL("http://www.google.com.hk");
-			URL url = new URL("http://54.86.168.77");
+			URL url = new URL("http://54.86.238.101");
 
 			HttpURLConnection hc = (HttpURLConnection) url.openConnection();
 			hc.setDoOutput(true);
@@ -204,7 +204,7 @@ public class Record {
 			OutputStreamWriter out=new OutputStreamWriter(hc.getOutputStream());
 			
 		      System.out.println("New outputstreamwriter");			
-			while(i<2) {//TODO: loop according to record_q.size
+			while(i<record_q.size()) {//TODO: loop according to record_q.size
 			  Record item=record_q.get(i);
 			  Integer waitTime=item.tsDelta*1000;
 			  data="";
@@ -239,15 +239,15 @@ public class Record {
 
 
 			  
-//			  BufferedReader reader=new BufferedReader(new InputStreamReader(hc.getInputStream()));//new
-//			  StringBuilder sb=new StringBuilder();
-//			  String line=null;
-//			  while((line=reader.readLine()) != null) {
+			  BufferedReader reader=new BufferedReader(new InputStreamReader(hc.getInputStream()));//new
+			  StringBuilder sb=new StringBuilder();
+			  String line=null;
+			  while((line=reader.readLine()) != null) {
 				  
-//				  sb.append(line+"\n");
-//			  }
-//			  String test=sb.toString();
-
+				  sb.append(line+"\n");
+			  }
+			  String test=sb.toString();
+		      System.out.println("output stream:" + test);
 		      System.out.println("-----Finish out.write--------" + waitTime);
 		     
 		      System.out.println(new Date());
