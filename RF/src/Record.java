@@ -40,8 +40,8 @@ public class Record {
 		// TODO Auto-generated method stub
 		List<Record> record_q = new ArrayList<Record>();
 		try {
-			FileInputStream fstream = new FileInputStream("event_movement_archive.csv");
-//			FileInputStream fstream = new FileInputStream("event_movement_archive copy.csv");
+//			FileInputStream fstream = new FileInputStream("event_movement_archive.csv");
+			FileInputStream fstream = new FileInputStream("event_movement_archive copy.csv");
 			DataInputStream in = new DataInputStream(fstream);
 			BufferedReader br = new BufferedReader(new InputStreamReader(in));
 
@@ -81,7 +81,9 @@ public class Record {
 					nextLineIsEmpty=0;
 				}					
 			}
-
+			System.out.println(":lineCnt=" + lineCnt);
+			System.out.println(":currentLineIsEmpty=" + currentLineIsEmpty);
+			System.out.println(":nextLineIsEmpty=" + nextLineIsEmpty);			
 			while (currentLineIsEmpty==0) {
 
 				lineCnt++;
@@ -106,16 +108,23 @@ public class Record {
 					coorx_q.add(coor[5]);
 					coory_q.add(coor[6]);
 					mac_q.add(coor[1]);
-					lastHour = hour;
-					lastMin = min;
-					lastSec = sec;
+
 					firstLine = false;
 					System.out.println("First line Coordx is :" + coor[5]);
 					System.out.println("First line Coordy is :" + coor[6]);
 					System.out.println("First line mac is :" + coor[1]);					System.out.println("coorx_q.size=" + coorx_q.size());
 					System.out.println("coorx_q last item=" + coorx_q.get(coorx_q.size()-1));
+					Record record = new Record(coorx_q, coory_q, mac_q, 0, strTS);
+					record_q.add(record);
+					coorx_q.clear();
+					coory_q.clear();
+					mac_q.clear();
+					lastHour = hour;
+					lastMin = min;
+					lastSec = sec;
+					System.out.println("After push, record_q.size=" + record_q.size());	
 					// push to the same q
-				} else if ((hour == lastHour) && (min == lastMin)
+/*				} else if ((hour == lastHour) && (min == lastMin)
 						&& (sec == lastSec)) {
 					coorx_q.add(coor[5]);
 					coory_q.add(coor[6]);
@@ -123,10 +132,12 @@ public class Record {
 					System.out.println("Push Coordx is :" + coor[5]);
 					System.out.println("Push Coordy is :" + coor[6]);
 					// push the last record and create new record.
-				} else {
-					secDelta = (hour - lastHour) * 3600 + (min - lastMin) * 60
-							+ (sec - lastSec);
-
+*/				} else {
+	                
+					secDelta = (hour*3600+min*60+sec)-(lastHour*3600+lastMin*60+lastSec);
+					coorx_q.add(coor[5]);
+					coory_q.add(coor[6]);
+					mac_q.add(coor[1]);
 					Record record = new Record(coorx_q, coory_q, mac_q, secDelta, strTS);
 					record_q.add(record);
 
@@ -136,13 +147,13 @@ public class Record {
 					lastHour = hour;
 					lastMin = min;
 					lastSec = sec;
-					coorx_q.add(coor[5]);
-					coory_q.add(coor[6]);
-					mac_q.add(coor[1]);
+
 					System.out.println("New Push Coordx is :" + coor[5]);
 					System.out.println("New Push Coordy is :" + coor[6]);
+					System.out.println("New Push tsDelta is :" + secDelta);
+					System.out.println("After push, record_q.size=" + record_q.size());	
 				}
-
+/*
 				if(nextLineIsEmpty==1) {
 					System.out.println("!!Last line");
 					secDelta = 0;
@@ -152,30 +163,40 @@ public class Record {
 				    System.out.println("Coordy is 2:" + coor[6]);
 				    System.out.println("record_q.size:" + record_q.size());
 				}
-				
+*/				
 
 				currentLine=nextLine;
 				nextLine=br.readLine();
 				System.out.println("currentLine:" + currentLine);
 				System.out.println("nextLine:" + nextLine);
-				currentLineIsEmpty=1;
+				currentLineIsEmpty=nextLineIsEmpty;//1;
 				nextLineIsEmpty=1;
-				wcnt=0;				
+				wcnt=0;		
+				if(nextLine == null) {
+					
+					nextLineIsEmpty=1;
+				}else{
 				for(wcnt=0; wcnt<nextLine.length(); wcnt++) {
 					if(Character.isDigit(nextLine.charAt(wcnt))) {
 						nextLineIsEmpty=0;
 					}					
 				}
+				}
+				/*
 				for(wcnt=0; wcnt<currentLine.length(); wcnt++) {
 					if(Character.isDigit(currentLine.charAt(wcnt))) {
 						currentLineIsEmpty=0;
 					}					
 				}
-				System.out.println("----lineCnt=" + lineCnt);
+				*/
+				System.out.println(":lineCnt=" + lineCnt);
+				System.out.println(":currentLineIsEmpty=" + currentLineIsEmpty);
+				System.out.println(":nextLineIsEmpty=" + nextLineIsEmpty);
+
 			}
 
 		    
-			System.out.println("----Finish file handling---. lineCnt=" + lineCnt);
+			System.out.println("----Finish file handling---");
 
 
 			in.close();
@@ -188,27 +209,29 @@ public class Record {
 			System.out.println("-----Start HTTP handling--------");
 			System.out.println("record_q.size=" + record_q.size());
 			Integer i=0;
-		    DateFormat df = new SimpleDateFormat("dd/MM/yy HH:mm:ss");
-		    Date dateobj = new Date();
+
 			String data="";
 			StringBuffer databuf;
 			  
-		    Integer second, minute, hour;
-		    GregorianCalendar date=new GregorianCalendar();
 		      
-			URL url = new URL("http://10.140.44.27/");
-//		    URL url = new URL("http://www.google.com.hk");
 
-			HttpURLConnection hc = (HttpURLConnection) url.openConnection();
-			hc.setDoOutput(true);
+			URL url = new URL("http://54.86.238.101:8989");
+//			URL url = new URL("http://127.0.0.1:8080");//for local test
+	
+			while(i<record_q.size()) {
+		      HttpURLConnection hc = (HttpURLConnection) url.openConnection();
+			  hc.setDoOutput(true);
 
-			System.out.println("-----Finish set--------");
-			OutputStreamWriter out=new OutputStreamWriter(hc.getOutputStream());
-			
-		      System.out.println("New outputstreamwriter");			
-			while(i<2) {//TODO: loop according to record_q.size
+
+			  OutputStreamWriter out=new OutputStreamWriter(hc.getOutputStream());
+				
+			      
 			  Record item=record_q.get(i);
 			  Integer waitTime=item.tsDelta*1000;
+			  System.out.println("Get item " + i);
+			  System.out.println("Get item tsDelta:" + item.tsDelta);
+			  System.out.println("Get item waitTime:" + waitTime);
+			  
 			  data="";
 			  databuf=new StringBuffer();
 			  
@@ -236,39 +259,31 @@ public class Record {
 			  out.write( data );//new
 			  out.flush(); //new
 			  
-			  System.out.println("Get item " + i);
-			  System.out.println("Get item waitTime:" + waitTime);
-
-
 			  
 			  BufferedReader reader=new BufferedReader(new InputStreamReader(hc.getInputStream()));//new
-			  StringBuilder sb=new StringBuilder();
-			  String line=null;
+
+		      StringBuilder sb=new StringBuilder();
+
+		      String line=null;
 			  while((line=reader.readLine()) != null) {
 				  
 				  sb.append(line+"\n");
 			  }
+
 			  String test=sb.toString();
-
-		      System.out.println("-----Finish out.write--------" + waitTime);
-
-		      System.out.println(df.format(dateobj));
-	
-		      second = date.get(Calendar.SECOND);
-		      minute = date.get(Calendar.MINUTE);
-		      hour = date.get(Calendar.HOUR);
-		      System.out.println("Time:" + hour+":"+minute+":"+second);
+//		      System.out.println("output stream:" + test);
+//		      System.out.println("-----Finish out.write--------" + waitTime);
 		     
-		      Thread.currentThread().sleep(3000);//waitTime);
-		      second = date.get(Calendar.SECOND);
-		      minute = date.get(Calendar.MINUTE);
-		      hour = date.get(Calendar.HOUR);
-		      System.out.println("Time:" + hour+":"+minute+":"+second);
-		      System.out.println("-----Done wait--------");
-		      System.out.println(df.format(dateobj));
+		      System.out.println(new Date());
+		      Thread.sleep(waitTime);//waitTime);
+
+//		      System.out.println("-----Done wait--------");
+		      System.out.println(new Date());
 			  
 			  i++;
+			  out.close();
 			}
+			
 			
 		      System.out.println("-----Finish while--------");
 		} catch (Exception e) {
