@@ -1,0 +1,26 @@
+<!-- Ant build script for compiling and running the Amazon Kinesis Application.
+     Don't forget to fill in your AWS access credentials in (~/.aws/credentials)
+     before trying to run it.  -->
+<project name="RTLADataProducer" default="run" basedir=".">
+    <path id="aws.java.sdk.classpath">
+        <fileset dir="${basedir}/third-party" includes="**/*.jar"/>
+        <fileset dir="${basedir}/libs" includes="**/*.jar"/>
+        <pathelement location="bin"/>
+    </path>
+	
+	<target name="init">
+		<mkdir dir="bin"/>
+	</target>
+	
+	<target name="compile" depends="init">
+		<javac srcdir="src" destdir="bin" classpathref="aws.java.sdk.classpath"/>
+	</target>
+	
+    <target name="run" depends="compile">
+        <java classname="com.rtla.sample.RTLASample" classpathref="aws.java.sdk.classpath" fork="true"/>
+    </target>
+	
+	<target name="clean" description="Clean up the binary files.">
+		<delete dir="bin"/>
+	</target>
+</project>
