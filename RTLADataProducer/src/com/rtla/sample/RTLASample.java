@@ -20,6 +20,7 @@ import com.amazonaws.services.kinesis.model.ListStreamsResult;
 import com.amazonaws.services.kinesis.model.PutRecordRequest;
 import com.amazonaws.services.kinesis.model.PutRecordResult;
 import com.amazonaws.services.kinesis.model.ResourceInUseException;
+import com.rtla.helper.AWSKinesisHelper;
 
 public class RTLASample {
 
@@ -43,6 +44,15 @@ public class RTLASample {
 	}
 
 	public static void main(String[] args) throws Exception {
+		AWSKinesisHelper helper = AWSKinesisHelper.getInstance();
+		helper.prepareStream("RTLocation", 1);
+		for (int j = 0; j < 50000; j++) {
+			helper.sendData("RTLocation + " + j);
+		}
+		//helper.cleanUp();
+	}
+
+	public static void main1(String[] args) throws Exception {
 		init();
 		LOG.info("Kinesis Client created succesfully!");
 
@@ -90,7 +100,8 @@ public class RTLASample {
 			PutRecordRequest putRecordRequest = new PutRecordRequest();
 			putRecordRequest.setStreamName(rtlaStreamName);
 			putRecordRequest.setData(ByteBuffer.wrap(String.format(
-					"MAC-%s,corX-%d,corY-%d", "MAC" + j, new Integer(j), new Integer(j)).getBytes()));
+					"MAC-%s,corX-%d,corY-%d", "MAC" + j, new Integer(j),
+					new Integer(j)).getBytes()));
 			putRecordRequest.setPartitionKey(String
 					.format("partitionKey-%d", j));
 			PutRecordResult putRecordResult = kinesisClient
@@ -99,13 +110,13 @@ public class RTLASample {
 					+ putRecordRequest.getPartitionKey() + ", ShardID: "
 					+ putRecordResult.getShardId());
 		}
-		
+
 		LOG.info("Deleting the Stream");
 		DeleteStreamRequest deleteStreamRequest = new DeleteStreamRequest();
-        deleteStreamRequest.setStreamName(rtlaStreamName);
+		deleteStreamRequest.setStreamName(rtlaStreamName);
 
-        kinesisClient.deleteStream(deleteStreamRequest);
-        LOG.warn("Stream is now being deleted: " + rtlaStreamName);
+		kinesisClient.deleteStream(deleteStreamRequest);
+		LOG.warn("Stream is now being deleted: " + rtlaStreamName);
 	}
 
 	private static void waitForStreamToBecomeAvailable(String myStreamName) {
