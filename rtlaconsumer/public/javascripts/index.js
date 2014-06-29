@@ -1,4 +1,4 @@
-var io = io.connect('http://127.0.0.1:8001/page-io');
+var io = io.connect('/page-io');
 var draw;
 var devices = {};
 var raw_data = new kendo.data.DataSource();
