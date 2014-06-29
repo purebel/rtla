@@ -33,14 +33,14 @@ function drawChart() {
 	    labels: {
                 format: "{0:N0}",
             },
-	    min: 50,
+	    min: 40,
 	    max: 120
         },
         yAxis: {
 	    labels: {
                 format: "{0:N0}",
 	    },
-	    min: 50,
+	    min: 20,
 	    height: 120
         },
 	tooltip: {
@@ -56,6 +56,8 @@ function drawChart() {
 		var _mult = _.filter(devices, function(ele) {
 		    return (ele.data.length > 1);
 		});
+		var _svg = $("#chart > svg");
+		var _svgString = '<svg class="node-path">';
 		_mult.forEach(function(ele, ind) {
 		    var _color = ele.color,
 		        _nodes = $('circle[fill="' + _color + '"]');
@@ -63,6 +65,7 @@ function drawChart() {
 		    for (var i = 1; i < ele.data.length; i++) {
 			var _preNode = ele.data[i-1], _curNode = ele.data[i];
 			var _preCir = _.find(_nodes, function(_nd) {
+
 			    _nd = $(_nd);
 			    return (_modelMap[_nd.attr('data-model-id')].dataItem['X'] == _preNode['X'] && _modelMap[_nd.attr('data-model-id')].dataItem['Y'] == _preNode['Y']);
 			}), _curCir = _.find(_nodes, function(_nd) {
@@ -73,17 +76,18 @@ function drawChart() {
 			var _delCX = _curCirCX - _preCirCX, _delCY = _curCirCY - _preCirCY;
 			var _posCX = _delCX -  _delCX * 6 / Math.sqrt(_delCX * _delCX + _delCY * _delCY), _posCY = _delCY - _delCY * 6 / Math.sqrt(_delCX * _delCX + _delCY * _delCY);
 
-			$('#chart svg').append('<svg class="node-path"><marker id="' + $(_curCir).attr('id') + 'markerArrow" markerWidth="13" markerHeight="13" refx="2" refy="6"           orient="auto">        <path d="M2,2 L2,11 L10,6 L2,2" style="fill: ' + _color + '" />    </marker><path d="M ' + _preCirCX + ' ' + _preCirCY + ' l ' + _posCX + ' ' + _posCY + ' " stroke-width="1" stroke="' + _color + '" marker-end="url(#' + $(_curCir).attr('id') + 'markerArrow)" /></svg>');
+			_svgString += '<marker id="' + $(_curCir).attr('id') + 'markerArrow" markerWidth="13" markerHeight="13" refx="2" refy="6"           orient="auto">        <path d="M2,2 L2,11 L10,6 L2,2" style="fill: ' + _color + '" />    </marker><path d="M ' + _preCirCX + ' ' + _preCirCY + ' l ' + _posCX + ' ' + _posCY + ' " stroke-width="1" stroke="' + _color + '" marker-end="url(#' + $(_curCir).attr('id') + 'markerArrow)" />';
 			
 		    }
-
 		});
-	    }, 2000);
-	    
+		_svgString += '</svg>';
+		_svg.append(_svgString);
+	    }, 3000);
+
 	}
     });
-
 }
+var calcCount = 0;
 function getRandomColor() {
     var letters = '0123456789ABCDEF'.split('');
     var color = '#';

@@ -71,6 +71,7 @@ io.of('/kinesis-io').on('connection', function(socket) {
 	    new_data['X'] = parseFloat(new_data['X']);
 	    new_data['Y'] = parseFloat(new_data['Y']);
 	    new_data['size'] = 1;
+	    console.log(new_data);
 	    all_data.push(new_data);
 	    page_io.emit('dataReceived', new_data);
 	}

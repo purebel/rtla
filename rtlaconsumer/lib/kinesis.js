@@ -21,6 +21,7 @@ var desParams = {
 var shards = [];
 var describeRequest = kinesis.describeStream(desParams);
 var processRecord = function(data) {
+    console.log(data);
     if (data.length > 0) {
 	data.forEach(function(record, index, arr) {
 	    kinesis_io.emit('news', record.Data.toString());
