@@ -45,7 +45,8 @@ function drawChart() {
         },
 	tooltip: {
             visible: true,
-            format: "{3}: {0}",
+	    template: 'X: ${dataItem.X} - Y: ${dataItem.Y} - MAC: ${dataItem.MAC} - TimeStamp: ${dataItem.Timestamp}',
+//            format: "{3}: {0}",
             opacity: 1
         },
 	dataBound: function(e) {
