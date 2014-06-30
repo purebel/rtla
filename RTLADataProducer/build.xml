@@ -2,25 +2,36 @@
      Don't forget to fill in your AWS access credentials in (~/.aws/credentials)
      before trying to run it.  -->
 <project name="RTLADataProducer" default="run" basedir=".">
-    <path id="aws.java.sdk.classpath">
-        <fileset dir="${basedir}/third-party" includes="**/*.jar"/>
-        <fileset dir="${basedir}/libs" includes="**/*.jar"/>
-        <pathelement location="bin"/>
-    </path>
-	
+	<path id="classpath.local">
+		<fileset dir="${basedir}/third-party" includes="**/*.jar" />
+		<fileset dir="${basedir}/libs" includes="**/*.jar" />
+		<fileset dir="${basedir}/bin" includes="*.jar" />
+		<pathelement location="bin" />
+	</path>
+
 	<target name="init">
-		<mkdir dir="bin"/>
+		<mkdir dir="bin" />
 	</target>
-	
+
 	<target name="compile" depends="init">
-		<javac srcdir="src" destdir="bin" classpathref="aws.java.sdk.classpath"/>
+		<javac srcdir="src" destdir="bin" classpathref="classpath.local" />
 	</target>
-	
-    <target name="run" depends="compile">
-        <java classname="com.rtla.sample.RTLASample" classpathref="aws.java.sdk.classpath" fork="true"/>
-    </target>
-	
+
+	<target name="run" depends="compile">
+		<java classname="com.rtla.sample.RTLASample" classpathref="classpath.local" fork="true" />
+	</target>
+
+	<target name="build" depends="compile">
+		<jar jarfile="rtdp.jar" basedir="bin" includes="com/**/*.class">
+			<manifest>
+				<attribute name="Main-Class" value="com.rtla.sample.RTLASample" />
+				<attribute name="Class-Path" value=". third-party/commons-codec-1.3/commons-codec-1.3.jar third-party/commons-logging-1.1.1/commons-logging-1.1.1.jar third-party/freemarker-2.3.18/freemarker-2.3.18.jar third-party/jackson-annotations-2.1/jackson-annotations-2.1.1.jar third-party/jackson-core-2.1/jackson-core-2.1.1.jar third-party/jackson-databind-2.1/jackson-databind-2.1.1.jar third-party/java-mail-1.4.3/mail-1.4.3.jar third-party/joda-time-2.2/joda-time-2.2.jar third-party/stax-api-1.0.1/stax-api-1.0.1.jar third-party/stax-ri-1.2.0/stax-1.2.0.jar libs/aws-java-sdk-1.7.13.jar third-party/aspectj-1.6/aspectjrt.jar third-party/aspectj-1.6/aspectjweaver.jar third-party/httpcomponents-client-4.2.3/httpclient-4.2.3.jar third-party/httpcomponents-client-4.2.3/httpcore-4.2.jar third-party/spring-3.0/spring-beans-3.0.7.jar third-party/spring-3.0/spring-context-3.0.7.jar third-party/spring-3.0/spring-core-3.0.7.jar" />
+			</manifest>
+		</jar>
+		<java jar="rtdp.jar" fork="true" classpathref="classpath.local" maxmemory="256m" />
+	</target>
+
 	<target name="clean" description="Clean up the binary files.">
-		<delete dir="bin"/>
+		<delete dir="bin" />
 	</target>
 </project>
