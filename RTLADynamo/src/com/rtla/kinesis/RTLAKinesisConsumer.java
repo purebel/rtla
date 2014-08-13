@@ -79,6 +79,9 @@ public class RTLAKinesisConsumer {
 	static AWSCredentials credentials = null;	
 	static List<Record> records;
 	static Record rec;
+  	static int coorxStep=20;
+  	static int cooryStep=20;
+	
 	public static void main(String[] args) throws Exception{
 		// TODO Auto-generated method stub
 		String DBTableName = "MSE";//"EventMovement";
@@ -254,12 +257,29 @@ public class RTLAKinesisConsumer {
                   	System.out.println("JSON to JAVA array.coorx="+coorxVal);
                   	System.out.println("JSON to JAVA array.coory="+cooryVal);  
                   	System.out.println("JSON to JAVA array.moveDist="+moveDistance);
-                  	System.out.println("JSON to JAVA array.timestamp="+timestamp);              
-            	
+                  	System.out.println("JSON to JAVA array.timestamp="+timestamp);      
+                  	
+
+                  	float coorxFloat=Float.parseFloat(coorxVal);
+                  	int coorxInt=(int)coorxFloat;
+                  	String districtX=Integer.toString(coorxInt/coorxStep);
+                  	System.out.println("JSON to JAVA array.districtx="+districtX); 
+                  	
+                  	float cooryFloat=Float.parseFloat(cooryVal);
+                  	int cooryInt=(int)cooryFloat;
+                  	String districtY=Integer.toString(cooryInt/cooryStep);  
+                  	System.out.println("JSON to JAVA array.districty="+districtY); 
+                  	
+                  	String districtStr=districtX+districtY;
+                  	System.out.println("JSON to JAVA array.district="+districtStr);       
+                  	
                 Map<String, AttributeValue> item = new HashMap<String, AttributeValue>();
                 item.put("mac", new AttributeValue().withS(deviceId));
                 item.put("ts", new AttributeValue().withS(timestamp));
-
+                item.put("coorx", new AttributeValue().withS(coorxVal));
+                item.put("coory", new AttributeValue().withS(cooryVal));
+                item.put("movement", new AttributeValue().withS(moveDistance));
+                item.put("district", new AttributeValue().withS(districtStr));
 
                 
                 PutItemRequest itemRequest = new PutItemRequest().withTableName(tableName).withItem(item);
