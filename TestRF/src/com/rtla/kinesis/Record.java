@@ -45,11 +45,11 @@ public class Record {
 
 	public static void main(String[] args) {
 		//Add by Jason
-		String stream="RTLocation";
 		AWSKinesisHelper helper = AWSKinesisHelper.getInstance();
+
 		try {
 		
-		     helper.prepareStream("RTLocation", 1);
+		     helper.prepareStream("RTLA", 1);
 		} catch (Exception e1) {
 		     // TODO Auto-generated catch block
 		     e1.printStackTrace();
@@ -340,18 +340,18 @@ public class Record {
 				  subscripName=item.subscripName.get(j);
 				  
 				  
-				  databuf.append("\"type\":");
+				  databuf.append("\"type\":\"");
 				  databuf.append(type);
 				  databuf.append("\",");
 				  
 				  databuf.append("\"properties\":{");
 				      //subscriptionName
-				      databuf.append("\"subscriptionName\": {");
+				      databuf.append("\"subscriptionName\":{");
 				        databuf.append("\"type\":\"");
 				        databuf.append(subscripName);
 				      databuf.append("\"},");
 				      //entity
-				      databuf.append("\"entity\": {");
+				      databuf.append("\"entity\":{");
 				        databuf.append("\"type\":\"");
 				        databuf.append("string");
 				        databuf.append("\",");
@@ -359,17 +359,17 @@ public class Record {
 				        databuf.append(entityEnum);
 				      databuf.append("\"},");		
 				      //deviceId=MAC
-				      databuf.append("\"deviceId\": {");
+				      databuf.append("\"deviceId\":{");
 				        databuf.append("\"type\":\"");
 				        databuf.append(mac);
 				      databuf.append("\"},");
 				      //locationMapHier
-				      databuf.append("\"locationMapHierarchy\": {");
+				      databuf.append("\"locationMapHierarchy\":{");
 				        databuf.append("\"type\":\"");
 				        databuf.append(locationMapHier);
 				      databuf.append("\"},");
 				      //location coor
-				      databuf.append("\"locationCoordinate\": {");
+				      databuf.append("\"locationCoordinate\":{");
 				        databuf.append("\"type\":\"");
 				        databuf.append("locationCoordinate");
 				        databuf.append("\",");
@@ -431,7 +431,7 @@ public class Record {
 		      System.out.println("formed data:" + data);
 		      
 				//Add by jason
-				helper.sendData("RTLocation + " + data);
+				helper.sendData(data);
 				
 /*			  out.write( data );//new
 			  out.flush(); //new

@@ -102,7 +102,7 @@ public class AWSKinesisHelper {
 	 * 
 	 * @param streamName
 	 */
-	public void cleanUp(String streamName) {
+	public static void cleanUp(String streamName) {
 		DeleteStreamRequest deleteStreamRequest = new DeleteStreamRequest();
 		deleteStreamRequest.setStreamName(streamName);
 
