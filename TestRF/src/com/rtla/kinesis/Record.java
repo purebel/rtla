@@ -8,6 +8,7 @@ import java.io.InputStreamReader;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.*;
 
 import com.rtla.kinesis.AWSKinesisHelper;
 
@@ -30,6 +31,11 @@ public class Record {
 	static List<Record> movement_q= new ArrayList<Record>();;
 	static List<Record> presence_q= new ArrayList<Record>();
 	static List<Record> parse_rec_q=new ArrayList<Record>();
+	
+
+	
+	static String movementFile="movement_test.csv";
+	static String presenceFile="presence_test.csv";
 	
 
 	// tsDelta is the sec to wait before sending next record.
@@ -56,7 +62,7 @@ public class Record {
 
 	//type=0: movement
 	//type=1: presence
-	public static void genRecordQ(String filename, String type, List<Record> record_q) throws IOException {
+	public static void genRecordQ (String filename, String type, List<Record> record_q) throws IOException {
 		File file= new File(filename);
 		FileInputStream fstream = new FileInputStream(file);
 		DataInputStream in = new DataInputStream(fstream);
@@ -94,10 +100,13 @@ public class Record {
 		Integer nextLineIsEmpty=1;
 		Integer wcnt;
 		Integer lineCnt=0;
+
 		
 		int cmp;
 		cmp=type.compareTo("movement");
-		System.out.println("input csv type=" + type + ", cmp="+cmp);		
+		System.out.println("input csv type=" + type + ", cmp="+cmp);	
+		
+
 
 		for(wcnt=0; wcnt<currentLine.length(); wcnt++) {
 			if(Character.isDigit(currentLine.charAt(wcnt))) {
@@ -279,8 +288,8 @@ public class Record {
 			}
 			if(presence_q.size()>0){
 			  presence_item=presence_q.get(0);
-			  presence_ts=movement_item.ts;
-			  System.out.println(" presence_ts="+presence_ts);
+			  presence_ts=presence_item.ts;
+			  System.out.println(" presence_ts="+presence_ts);		  
 			  presence_q.remove(0);
 			}
 			if(movement_item != null && presence_item != null) {
@@ -304,7 +313,9 @@ public class Record {
 				System.out.println("put presence item. presence_ts="+presence_ts);
 			}
 		}
+//		System.out.println("maxX="+maxX+", maxY="+maxY);
 		System.out.println("Leaving parseRecord");
+		
 	}//parseRecord
 	
 	public static void main(String[] args) {
@@ -322,9 +333,9 @@ public class Record {
 		// TODO Auto-generated method stub
 		
 		try {
-			genRecordQ("movement_test.csv","movement", movement_q);//0:movement
+			genRecordQ(movementFile, "movement", movement_q);//"movement_test.csv","movement", movement_q);//0:movement
 			System.out.println("---- Done genRecordQ for movement ----");
-			genRecordQ("presence_test.csv","presence", presence_q);//1:presence
+			genRecordQ(presenceFile, "presence", presence_q);//"presence_test.csv","presence", presence_q);//1:presence
 			System.out.println("---- Done genRecordQ for presence----");
 		} catch (Exception e) {
 			System.err.println("Error: " + e.getMessage());
@@ -350,7 +361,7 @@ public class Record {
 	*/
 			parseRecord();
 			System.out.println("parse_rec_q.size=" + parse_rec_q.size());
-			while(i<parse_rec_q.size()) {
+			while(parse_rec_q.size()>0) {
 				/*
 			}
 		      HttpURLConnection hc = (HttpURLConnection) url.openConnection();
@@ -360,7 +371,8 @@ public class Record {
 			  OutputStreamWriter out=new OutputStreamWriter(hc.getOutputStream());
 */				
 			      
-			  Record item=parse_rec_q.get(i);
+			  Record item=parse_rec_q.get(0);
+			  parse_rec_q.remove(0);
 			  Integer waitTime=item.tsDelta*1000;
 			  System.out.println("Get item " + i);
 			  System.out.println("Get item tsDelta:" + item.tsDelta);
