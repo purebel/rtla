@@ -33,14 +33,14 @@ function drawChart() {
 	    labels: {
                 format: "{0:N0}",
             },
-	    min: 40,
+	    min: 0,
 	    max: 120
         },
         yAxis: {
 	    labels: {
                 format: "{0:N0}",
 	    },
-	    min: 20,
+	    min: 0,
 	    height: 120
         },
 	tooltip: {
@@ -120,5 +120,5 @@ $(function() {
 });
 
 setTimeout(function() {
-    drawChart();
+//    drawChart();
 }, 100);

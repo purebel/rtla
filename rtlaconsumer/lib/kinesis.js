@@ -14,7 +14,7 @@ var kinesis = new AWS.Kinesis();
 //Get all shards in the stream
 var exclusiveStartShardId = null;
 var desParams = {
-    StreamName: 'RTLocation', // required
+    StreamName: 'RTLocation2', // required
     ExclusiveStartShardId: null,
     Limit: 1
 };
