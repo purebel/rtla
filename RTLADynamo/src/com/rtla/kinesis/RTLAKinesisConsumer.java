@@ -79,38 +79,15 @@ public class RTLAKinesisConsumer {
 	static AWSCredentials credentials = null;	
 	static List<Record> records;
 	static Record rec;
-  	static int coorxStep=20;
-  	static int cooryStep=20;
+  	static int coorxStep=1;
+  	static int cooryStep=1;
+	static String DBTableName = "MSE";//"EventMovement";
 	
 	public static void main(String[] args) throws Exception{
 		// TODO Auto-generated method stub
-		String DBTableName = "MSE";//"EventMovement";
+
     	credentials = new ProfileCredentialsProvider().getCredentials();
-    	kinesisClient = new AmazonKinesisClient(credentials);//Helper.setupKinesisClient();
-
-    	//-------TEST Start --------//
-/*  
-    	String jsStr="{\"locationCoordinate\": {"
-    		+ "\"type\":\"locationCoordinate\","
-    		+"\"properties\":{\"x\":{\"type\":\"70.24668\"},"
-    		+ "    		      \"y\":{\"type\":\"85.13588\"},"
-    		+ "    		       \"unit\":{\"type\":\"string\",\"enum\":\"FEET\"}}}}";
-
-    	  JSONObject dataJson = JSONObject.fromObject(jsStr);
-    	   
-    	JSONObject resp=dataJson.getJSONObject("locationCoordinate");
-    	JSONObject data=resp.getJSONObject("properties");
-    	JSONObject coorx=data.getJSONObject("x");
-    	String coorxVal =coorx.getString("type");
-
-    	JSONObject coory=data.getJSONObject("y");
-    	String cooryVal =coory.getString("type");
-
-        	System.out.println("JSON to JAVA array.coorx="+coorxVal);
-        	System.out.println("JSON to JAVA array.coory="+cooryVal);        		
-*/
-    	//-------TEST END --------//
-    	
+    	kinesisClient = new AmazonKinesisClient(credentials);//Helper.setupKinesisClient();    	
 
         createClient();
 		System.out.println("Done client create" );
@@ -118,8 +95,6 @@ public class RTLAKinesisConsumer {
 
         	getRecords();
     		System.out.println("Done getRecords" );
- //           uploadItems(DBTableName);
- //   		System.out.println("Done uploadItems" );
 
         } catch (AmazonServiceException ase) {
             System.err.println("Data load script failed.");
@@ -127,10 +102,6 @@ public class RTLAKinesisConsumer {
 	}//main
 
         private static void createClient() throws Exception {
-
-//new PropertiesCredentials(
-    				//RTLAKinesisConsumer.class.getResourceAsStream("AwsCredentials.properties"));
-
             client = new AmazonDynamoDBClient(credentials);
         }//createClient
         
@@ -175,6 +146,7 @@ public class RTLAKinesisConsumer {
     		// Continuously read data records from shard.
 
     		while (true) {
+    			
     			// Create new GetRecordsRequest with existing shardIterator.
     			// Set maximum records to return to 1000.
     			GetRecordsRequest getRecordsRequest = new GetRecordsRequest();
@@ -193,7 +165,7 @@ public class RTLAKinesisConsumer {
                 	String recStr=new String(byteBuffer.array());
     				System.out.println(String.format("Seq No: %s", rec.getSequenceNumber()));
     				System.out.println("recStr="+recStr);
-    				uploadItems("MSE", recStr);
+    				uploadItems(DBTableName, recStr);
     				System.out.println("Done 1 item put");
 //    				records.remove(i);
     			}
@@ -216,25 +188,21 @@ public class RTLAKinesisConsumer {
             
             try {
               	System.out.println("Entering uploadItems");  
-              	// Add books.
 
-//            	String recArray[]=recStr.split("\\+");
-//            	String jsStr=recArray[1];
               	String jsStr=recStr;
+              	String moveDistance="";
            
             	
               	System.out.println("Rec to JSON String:"+jsStr);            	
 
-            	  JSONObject dataJson = JSONObject.fromObject(jsStr);
+            	JSONObject dataJson = JSONObject.fromObject(jsStr);
             	  
-            	  String type=dataJson.getString("type");
+            	String type=dataJson.getString("type");
                 	
-            	   JSONObject propertiesJ=dataJson.getJSONObject("properties");
- //           	   JSONObject subscriptionNameJ=propertiesJ.getJSONObject("subscriptionName");
-//            	   String subscriptionName=subscriptionNameJ.getString("type");
+            	JSONObject propertiesJ=dataJson.getJSONObject("properties");
 
-               	   JSONObject deviceIdJ=propertiesJ.getJSONObject("deviceId");
-            	   String deviceId=deviceIdJ.getString("type");            	   
+                JSONObject deviceIdJ=propertiesJ.getJSONObject("deviceId");
+            	String deviceId=deviceIdJ.getString("type");            	   
             	   
      	   
             	JSONObject locationJ=propertiesJ.getJSONObject("locationCoordinate");
@@ -244,10 +212,10 @@ public class RTLAKinesisConsumer {
             	JSONObject coory=locationPropJ.getJSONObject("y");
             	String cooryVal =coory.getString("type");
 
-//              	System.out.println("JSON to JAVA 3");
-                	
+                if(type.compareTo("movement")==0)	{
              	   JSONObject moveDistanceInFtJ=propertiesJ.getJSONObject("moveDistanceInFt");
-             	   String moveDistance=moveDistanceInFtJ.getString("type");      
+             	   moveDistance=moveDistanceInFtJ.getString("type");  
+                }
              	   
              	   JSONObject timestampJ=propertiesJ.getJSONObject("timestamp");
              	   String timestamp=timestampJ.getString("type");   
@@ -256,7 +224,9 @@ public class RTLAKinesisConsumer {
                  	System.out.println("JSON to JAVA array.mac="+deviceId);
                   	System.out.println("JSON to JAVA array.coorx="+coorxVal);
                   	System.out.println("JSON to JAVA array.coory="+cooryVal);  
+                if(type.compareTo("movement")==0){
                   	System.out.println("JSON to JAVA array.moveDist="+moveDistance);
+                }
                   	System.out.println("JSON to JAVA array.timestamp="+timestamp);      
                   	
 
@@ -270,7 +240,7 @@ public class RTLAKinesisConsumer {
                   	String districtY=Integer.toString(cooryInt/cooryStep);  
                   	System.out.println("JSON to JAVA array.districty="+districtY); 
                   	
-                  	String districtStr=districtX+districtY;
+                  	String districtStr=districtX+"-"+districtY;
                   	System.out.println("JSON to JAVA array.district="+districtStr);       
                   	
                 Map<String, AttributeValue> item = new HashMap<String, AttributeValue>();
@@ -278,7 +248,9 @@ public class RTLAKinesisConsumer {
                 item.put("ts", new AttributeValue().withS(timestamp));
                 item.put("coorx", new AttributeValue().withS(coorxVal));
                 item.put("coory", new AttributeValue().withS(cooryVal));
-                item.put("movement", new AttributeValue().withS(moveDistance));
+                if(type.compareTo("movement")==0){
+                  item.put("movement", new AttributeValue().withS(moveDistance));
+                }
                 item.put("district", new AttributeValue().withS(districtStr));
 
                 
@@ -303,85 +275,4 @@ public class RTLAKinesisConsumer {
         }		
 		
 		
-		
-		/*
-		
-//		AmazonKinesisClient kinesisClient = new Helper.setupKinesisClient();
-		AWSCredentials credentials = null;
-		kinesisClient = new AmazonKinesisClient(credentials);
-		dbclient = new AmazonDynamoDBClient(credentials);
-		// Retrieve the Shards from a Stream
-		DescribeStreamRequest describeStreamRequest = new DescribeStreamRequest();
-		DescribeStreamRequest.setStreamName(Helper.properties().getProperty("RTLocation"));
-		DescribeStreamResult describeStreamResult;
-		List<Shard> shards = new ArrayList<>();
-		String lastShardId = null;
-
-		do {
-		    describeStreamRequest.setExclusiveStartShardId(lastShardId);
-		    describeStreamResult = kinesisClient.describeStream(describeStreamRequest);
-		    shards.addAll(describeStreamResult.getStreamDescription().getShards());
-		    if (shards.size() > 0) {
-		        lastShardId = shards.get(shards.size() - 1).getShardId();
-		    }
-		} while (describeStreamResult.getStreamDescription().getHasMoreShards());
-
-		// Get Data from the Shards in a Stream
-		// Hard-coded to use only 1 shard
-		String shardIterator;
-		GetShardIteratorRequest getShardIteratorRequest = new GetShardIteratorRequest();
-		getShardIteratorRequest.setStreamName(Helper.properties().getProperty("kinesisStreamName"));
-		getShardIteratorRequest.setShardId(shards.get(0).getShardId());
-		getShardIteratorRequest.setShardIteratorType("TRIM_HORIZON");
-
-		GetShardIteratorResult getShardIteratorResult = kinesisClient.getShardIterator(getShardIteratorRequest);
-		shardIterator = getShardIteratorResult.getShardIterator();
-
-		// Continuously read data records from shard.
-		List<Record> records;
-		while (true) {
-			// Create new GetRecordsRequest with existing shardIterator.
-			// Set maximum records to return to 1000.
-			GetRecordsRequest getRecordsRequest = new GetRecordsRequest();
-			getRecordsRequest.setShardIterator(shardIterator);
-			getRecordsRequest.setLimit(1000);
-
-			GetRecordsResult result = kinesisClient.getRecords(getRecordsRequest);
-
-			// Put result into record list. Result may be empty.
-			records = result.getRecords();
-
-			// Print records
-			for (Record record : records) {
-				ByteBuffer byteBuffer = record.getData();
-
-///≤Â»Î dynamodb
-			try{
-			String tableName = "MSE";
-			Map<String, AttributeValue> item = new HashMap<String, AttributeValue>();
-			item.put("mac", new AttributeValue().withN("mac address"));
-			item.put("ts", new AttributeValue().withS("timestamp"));
-			item.put("px", new AttributeValue().withS("x postion"));
-			item.put("py", new AttributeValue().withS("y postion"));
-			PutItemRequest putItemRequest = new PutItemRequest().withTableName(tableName).withItem(item);
-            		PutItemResult result = dbclient.putItem(putItemRequest);
-			}catch (AmazonServiceException ase) {
-            			System.err.println("Create items failed.");
-			}
-				
-////
-				System.out.println(String.format("Seq No: %s - %s", record.getSequenceNumber(),
-						new String(byteBuffer.array())));
-			}
-
-			try {
-				Thread.sleep(1000);
-			} catch (InterruptedException exception) {
-				throw new RuntimeException(exception);
-			}
-
-			shardIterator = result.getNextShardIterator();
-		}
-		
-     }*/
 }
