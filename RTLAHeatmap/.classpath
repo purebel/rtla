@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.7"/>
+	<classpathentry kind="lib" path="/Users/qiuzheng/Documents/workspace/lib/aws-java-sdk-1.8.8/lib/aws-java-sdk-1.8.8.jar"/>
+	<classpathentry kind="lib" path="/Users/qiuzheng/Documents/workspace/lib/org.json-20120521.jar"/>
+	<classpathentry kind="lib" path="/Users/qiuzheng/Documents/workspace/lib/jackson-databind-2.2.2.jar"/>
+	<classpathentry kind="lib" path="/Users/qiuzheng/Documents/workspace/lib/json-lib-2/json-lib-2.4-jdk15.jar"/>
+	<classpathentry kind="lib" path="/Users/qiuzheng/Documents/workspace/lib/ezmorph-1/ezmorph-1.0.jar"/>
+	<classpathentry kind="lib" path="/Users/qiuzheng/Documents/workspace/lib/commons_logging.jar"/>
+	<classpathentry kind="lib" path="/Users/qiuzheng/Documents/workspace/lib/commons-lang/commons-lang.jar"/>
+	<classpathentry kind="lib" path="/Users/qiuzheng/Documents/workspace/lib/commons-collections/commons-collections.jar"/>
+	<classpathentry kind="lib" path="/Users/qiuzheng/Documents/workspace/lib/fastjson-1.1.6.jar"/>
+	<classpathentry kind="lib" path="/Users/qiuzheng/Documents/workspace/lib/commons-beanutils/commons-beanutils.jar"/>
+	<classpathentry kind="lib" path="/Users/qiuzheng/Documents/workspace/lib/jackson-annotations-2.0.2.jar"/>
+	<classpathentry kind="lib" path="/Users/qiuzheng/Documents/workspace/lib/jackson-core-2.1.2.jar"/>
+	<classpathentry kind="lib" path="/Users/qiuzheng/Documents/workspace/lib/httpcomponents-client-4.3.3/lib/httpclient-4.3.3.jar"/>
+	<classpathentry kind="lib" path="/Users/qiuzheng/Documents/workspace/lib/httpcomponents-client-4.3.3/lib/httpcore-4.3.2.jar"/>
+	<classpathentry kind="lib" path="/Users/qiuzheng/Documents/workspace/lib/httpcomponents-client-4.3.3/lib/httpmime-4.3.3.jar"/>
+	<classpathentry kind="lib" path="/Users/qiuzheng/Documents/workspace/lib/joda-time-2.0.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
