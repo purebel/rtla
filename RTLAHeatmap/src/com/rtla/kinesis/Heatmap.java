@@ -96,10 +96,11 @@ public class Heatmap {
 	static Record rec;
   	static int coorxStep=1;
   	static int cooryStep=1;
-	static String DBTableName = "heatMap";
+	static String DBTableName = "QH_heatmap2";
 	static int firstRec=0;
 	static String date="";
 	static int heatMapStep=10;
+	static String StreamName="RTLA_0821";	
 	
 	public static void main(String[] args) throws Exception{
 		// TODO Auto-generated method stub
@@ -126,7 +127,7 @@ public class Heatmap {
         
         
         private static void getRecords() {
-        	String StreamName="RTLA";
+
     		// Retrieve the Shards from a Stream
     		DescribeStreamRequest describeStreamRequest = new DescribeStreamRequest();
     		describeStreamRequest.setStreamName(StreamName);
@@ -270,7 +271,7 @@ public class Heatmap {
                       	System.out.println("First record, init date="+date);                  		
                   	}
  */                 	
-        			String tsCode=curDate+" "+strHour+":"+strMinCode;
+        			String tsCode=curDate;//+" "+strHour+":"+strMinCode;
        
                   	//get stats from table
                   	int cnt=getStats(tableName, districtStr, tsCode);
@@ -301,16 +302,17 @@ public class Heatmap {
             	
             	Condition hashKeyCondition = new Condition()
                 .withComparisonOperator(ComparisonOperator.EQ)
-                .withAttributeValueList(new AttributeValue().withS(district));
+                .withAttributeValueList(new AttributeValue().withS(/*district*/tsCode));
             	
             	Condition rangeKeyCondition = new Condition()
                 .withComparisonOperator(ComparisonOperator.EQ)
-                .withAttributeValueList(new AttributeValue().withS(tsCode));
+                .withAttributeValueList(new AttributeValue().withS(/*tsCode*/district));
             	
             Map<String, Condition> keyConditions = new HashMap<String, Condition>();
-            keyConditions.put("district", hashKeyCondition);
-            keyConditions.put("ts", rangeKeyCondition);
-            
+//            keyConditions.put("district", hashKeyCondition);
+//            keyConditions.put("ts", rangeKeyCondition);
+          keyConditions.put("ts", hashKeyCondition);
+          keyConditions.put("district", rangeKeyCondition);            
 
             QueryRequest queryRequest = new QueryRequest()
                 .withTableName(tableName)

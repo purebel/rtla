@@ -58,19 +58,19 @@ $(function() {
 	},
 	tooltip : {
             trigger: 'item',
-            formatter: function(v) {
-		return v[1];
-            }
+//            formatter: function(v) {
+//		return v[1];
+//            }
 	},
-	color: ['orangered','green','lightskyblue'],//['rgba(218, 70, 214, 1)', 'rgba(100, 149, 237, 1)', 'green'],
+	color: ['red', 'yellow','green','lightskyblue', 'blue'],//['rgba(218, 70, 214, 1)', 'rgba(100, 149, 237, 1)', 'green'],
 	legend: {
             data: ['DEMO']
 	},
     dataRange: {
         x : 'left',
         min: 0,
-        max: 7,
-        color: ['orangered','green','lightskyblue'],
+        max: 40,
+        color: ['red', 'yellow','green','lightskyblue', 'blue'],
         text:['High','Low'],           // 文本，默认为数值文本
         calculable : true
     },
@@ -78,9 +78,9 @@ $(function() {
             show : false,
             feature : {
 		mark : {show: false},
-		dataView : {show: true, readOnly: true},
-		restore : {show: false},
-		saveAsImage : {show: false}
+		dataView : {show: true, readOnly: false},//true
+		restore : {show: true},//false
+		saveAsImage : {show: true}//false
             }
 	},
 	series : [
@@ -106,8 +106,24 @@ $(function() {
                     '小兑儿': [71, 145],
 		},
 		markPoint : {
+                itemStyle: {
+                    normal: {
+//                        borderColor: '#87cefa',
+//                        borderWidth: 1,            // 标注边线线宽，单位px，默认为1
+                        label: {
+                            show: false
+                        }
+                    },
+                    emphasis: {
+//                        borderColor: '#1e90ff',
+//                        borderWidth: 5,
+                        label: {
+                            show: false
+                        }
+                    }
+                },
                     symbol : 'rectangle',
-                    symbolSize : 3,
+                    symbolSize : 1,
 //                large: true,
 //                effect : {
 //                    show: false
