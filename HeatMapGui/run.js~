@@ -1,0 +1,7 @@
+#!/usr/bin/env node
+var debug = require('debug')('rtlaconsumer');
+var app = require('./app');
+var kinesis = require('./lib/kinesis');
+
+app.server.listen(8001);
+//kinesis.request.send();

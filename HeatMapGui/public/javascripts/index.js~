@@ -1,0 +1,291 @@
+var io = io.connect('/page-io');
+var draw;
+var devices = {};
+var raw_data = new kendo.data.DataSource();
+function calcX(x) {
+    var floatx = parseFloat(x), width = draw.width();
+    return 30 + ((floatx - 50) / 70 * width);
+}
+function calcY(y) {
+    var floaty = parseFloat(y), height = draw.height();
+    return ((120 - floaty) / 70) * height;
+}
+var calcCount = 0;
+function getRandomColor() {
+    var letters = '0123456789ABCDEF'.split('');
+    var color = '#';
+    for (var i = 0; i < 6; i++ ) {
+        color += letters[Math.floor(Math.random() * 16)];
+    }
+    return color;
+}
+var dataCacheTimeout = 0;
+
+io.on('dataReceived', function(data) {
+    if (data.MAC in devices) {
+	devices[data.MAC].data.push(data);
+    } else {
+	devices[data.MAC] = {color: getRandomColor(), data: []};
+	devices[data.MAC].data.push(data);
+    }
+    data['color'] = devices[data.MAC].color;
+    raw_data.add(data);
+});
+var myCharts;
+
+$(function() {
+    $("#nav-bar").kendoMenu();
+    var myCharts = echarts.init(document.getElementById('content-map'));
+
+    echarts.util.mapData.params.params.USA = {
+	getGeoJson: function (callback) {
+            $.ajax({
+		url: "images/CBC_7F.svg",
+		dataType: 'xml',
+		success: function(xml) {
+                    callback(xml)
+		}
+            });
+	}
+    };
+/*
+var option = {
+    title : {
+        text: 'CBC_7F_HM',
+        x:'right'
+    },
+    tooltip : {
+        trigger: 'item',
+        showDelay: 0,
+        transitionDuration: 0.2,
+        formatter : function (a) {
+ //           var sName = a[0];
+ //           var pName = a[1];
+//            var value = a[2] + '';
+//            value = value.replace(/(\d{1,3})(?=(?:\d{3})+(?!\d))/g, '$1,');
+//            return sName + '<br/>' + pName + ' : ' + value;
+              return a[0];
+        }
+    },
+    dataRange: {
+        x : 'right',
+        min: 0,
+        max: 20,
+        color: ['orangered','yellow','lightskyblue'],
+        text:['High','Low'],           // 文本，默认为数值文本
+        calculable : true
+    },
+    toolbox: {
+        show : true,
+        //orient : 'vertical',
+        x: 'left',
+        y: 'top',
+        feature : {
+            mark : {show: true},
+            dataView : {show: true, readOnly: false},
+            restore : {show: true},
+            saveAsImage : {show: true}
+        }
+    },
+    series : [
+        {
+            name: 'DEMO',
+            type: 'map',
+            roam: true,
+            mapType: 'baiduBuilding', // 自定义扩展图表类型
+            itemStyle:{
+                emphasis:{label:{show:true}}
+            },
+            // 文本位置修正
+//            textFixed : {
+//                Alaska : [20, -20]
+//            },
+            data:[
+                {name : 'Alabama', value : 4822023}
+            ]
+        }
+    ]
+};  
+                  
+
+    echarts.util.mapData.params.params.baiduBuilding = {
+	getGeoJson: function (callback) {
+            $.ajax({
+		url: "images/CBC_7F.svg",
+		dataType: 'xml',
+		success: function(xml) {
+                    callback(xml)
+		}
+            });
+	}
+    };
+*/    
+    var option = {
+	backgroundColor:'#eee',
+	title : {
+//            text : 'CBC_7F',
+            text : 'CBC_7F_HM',
+            textStyle: {
+		color: '#000'
+            }
+	},
+	tooltip : {
+            trigger: 'item',
+         showDelay: 0,
+        transitionDuration: 0.2,
+           formatter: function(v) {
+		return v[1];
+            }
+	},
+    dataRange: {
+        x : 'right',
+        min: 0,
+        max: 20,
+        color: ['orangered','yellow','lightskyblue'],
+        text:['High','Low'],           // 文本，默认为数值文本
+        calculable : true
+    },
+	color: ['rgba(218, 70, 214, 1)', 'rgba(100, 149, 237, 1)', 'green'],
+	legend: {
+            data: ['DEMO']
+	},
+
+	toolbox: {
+            show : false,
+            feature : {
+		mark : {show: false},
+		dataView : {show: true, readOnly: true},
+		restore : {show: false},
+		saveAsImage : {show: false}
+            }
+	},
+	series : [
+            {
+		name: 'DEMO',
+		type: 'map',
+		mapType: 'USA',
+		roam:true,
+		itemStyle:{
+                    normal:{label:{show:true}},
+                    emphasis:{label:{show:true}}
+		},
+
+
+
+		data: [],
+		geoCoord: {
+                      '叮叮': [39]
+//                    '叮叮': [39, 45]
+//,
+//                    '小兑儿': [71, 45],
+		},
+		markPoint : {
+                    symbolSize : 3,
+                    data : [
+			{name: '叮叮'},
+			{name: '小兑儿'},
+                    ]
+		},
+
+		markLine : {
+                    smooth:false, //true,
+                    effect : {
+			show: false,//true,
+			scaleSize: 1,
+			period: 20,
+			color: '#fff',
+			shadowBlur: 5
+                    },
+                    symbol: ['none'],
+                    itemStyle : {
+			normal: {
+                            borderWidth:1,
+                            lineStyle: {
+				type: 'solid'
+                            }
+			}
+                    },
+
+                    data : [
+			[
+                            {name:'叮叮'}, 
+                            {name:'小兑儿'}
+			]
+                    ]//data
+		}//markLine
+
+            }//series
+	]//series
+    };//option
+
+
+    $("#dropdown").kendoDropDownList({
+//	dataTextField: "mac",
+//	dataValueField: "mac",
+	dataTextField: "district",
+	dataValueField: "district",
+	dataSource: {
+	    transport: {
+		read: {
+		    dataType: "json",
+		    url: "/apis/mac_list"
+		}
+	    }
+	}
+    });
+
+    $("#calendar").kendoCalendar({
+	format: "yyyy/MM/dd",
+	value: new Date(2014, 8, 13)
+    });
+    $("#apply").off("click").click(function(event) {
+	var _cal = $("#calendar").data("kendoCalendar").value();
+	var _calstr = _cal.getFullYear() + "-" + (_cal.getMonth() + 1) + "-" + _cal.getDate();
+	var _mac = $("#dropdown").data("kendoDropDownList").value();
+	var _data = {
+	    day: _calstr,
+	    mac: _mac
+	};
+	$.ajax({
+	    type: "GET",
+//	    url: "/apis/mac_day_details",
+            url: "/apis/heatmap_details",
+	    data: _data,
+	    dataType: "json",
+	    success: function(data) {
+		var _geoCoord = {};
+		var _mp_data = [];
+		var _ml_data = [];
+		for (var _ele in data) {
+		    if (_ele < 10) {
+		    var _item = data[_ele];
+console.log(_item);
+                    _geoCoord[_item["district"]]=[parseFloat(_item["coorx"]) * 671 / 128, (parseFloat(_item["coory"])) * 620 / 128];
+//		    _geoCoord[_item["ts"]] = [parseFloat(_item["coorx"]) * 671 / 128, (parseFloat(_item["coory"])) * 620 / 128];
+		    _mp_data.push({
+                        name: _item["cnt"]
+//			name: _item["ts"]
+		    });
+
+		    if (_ele != 0) {
+			_ml_data.push([
+			    {name: data[_ele-1]["ts"]},
+			    {name: data[_ele]["ts"]}
+			]);
+		    }
+
+		    }
+		}
+		option.series[0].geoCoord = _geoCoord;
+		option.series[0].markPoint.data = _mp_data;
+		option.series[0].markLine.data = _ml_data;
+		myCharts.setOption(option);
+	    }
+	});
+
+    });
+});
+
+setTimeout(function() {
+    //    drawChart();
+}, 100);
