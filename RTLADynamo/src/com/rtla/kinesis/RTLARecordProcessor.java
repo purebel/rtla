@@ -3,6 +3,7 @@ package com.rtla.kinesis;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -40,7 +41,8 @@ public class RTLARecordProcessor implements IRecordProcessor {
 	private static final long CHECKPOINT_INTERVAL_MILLIS = 60000L;
 	private long nextCheckpointTimeInMillis;
 	
-	static String DBTableName = "MSE_JASON";//"EventMovement";
+	static String DBTableMSE = "MSE_JASON";//"EventMovement";
+	static String DBTableStat = "RTLA_STATS_DAILY_JASON";//Daily Statistic
 	
 	protected static AmazonDynamoDBClient client;
 	private static int coorxStep=1;
@@ -109,7 +111,11 @@ public class RTLARecordProcessor implements IRecordProcessor {
 					data = decoder.decode(record.getData()).toString();
 					LOG.info(record.getSequenceNumber() + ", "
 							+ record.getPartitionKey() + ", " + data);
-					uploadItemsToDynamo(DBTableName, data);
+					//MSE raw data
+					uploadItemsToDynamo(DBTableMSE, data);
+					
+					//Daily statistics
+					uploadItemForStat(DBTableStat, data);
 					//
 					// Logic to process record goes here.
 					//
@@ -191,7 +197,42 @@ public class RTLARecordProcessor implements IRecordProcessor {
 		}
 	}
 	
-	private static void uploadItemsToDynamo(String tableName, String data) {
+	private static void uploadItemForStat(String tableName, String data) {
+        
+        try {
+          	LOG.info("UploadItem Dynamo DB:" + tableName + " with Item:" + data);
+          	
+          	JSONObject eventObj = JSONObject.fromObject(data);
+          	LOG.info("JSONObject with data:" + 
+          			eventObj.getString("deviceId") + "\n" + 
+          			eventObj.getString("entity") + "\n" + 
+          			eventObj.getString("unit") + "\n" +
+          			eventObj.getString("coor_x") + "\n" +
+          			eventObj.getString("coor_y") + "\n" +
+          			eventObj.getString("moveDistanceInFt") + "\n" +
+          			eventObj.getString("locationMapHierarchy") + "\n" +
+          			eventObj.getString("referenceMarkerName") + "\n" +
+          			eventObj.getString("subscriptionName") + "\n" +
+          			eventObj.getString("type") + "\n" +
+          			eventObj.getString("timestamp") + "\n");
+          	
+          	Map<String, AttributeValue> item = new HashMap<String, AttributeValue>();
+          	item.put("date",  new AttributeValue().withS(eventObj.getString("timestamp").substring(0, 10)));
+          	item.put("mac", new AttributeValue().withS(eventObj.getString("deviceId")));
+          	item.put("entity", new AttributeValue().withS(eventObj.getString("entity")));
+          	PutItemRequest itemRequest = new PutItemRequest().withTableName(tableName).withItem(item);
+            PutItemResult itemResult = client.putItem(itemRequest);
+            LOG.info(itemResult.getConsumedCapacity());
+            item.clear();
+                
+        }   catch (AmazonServiceException ase) {
+        	LOG.error("Failed to create item in " + tableName);
+        	ase.printStackTrace();
+        } 
+
+    }
+	
+private static void uploadItemsToDynamo(String tableName, String data) {
         
         try {
           	LOG.info("UploadItem Dynamo DB:" + tableName + " with Item:" + data);

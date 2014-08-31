@@ -3,3 +3,5 @@ node_modules
 .project
 RTLADataProducer/rtdp.jar
 RTLADataProducer/bin
+RTLADynamo/bin
+
