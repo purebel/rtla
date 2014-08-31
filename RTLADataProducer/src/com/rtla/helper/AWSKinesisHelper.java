@@ -1,6 +1,7 @@
 package com.rtla.helper;
 
 import java.nio.ByteBuffer;
+import java.util.Date;
 
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
@@ -27,6 +28,8 @@ public class AWSKinesisHelper {
 	private static AmazonKinesisClient kinesisClient = null;
 	private static String kinesisStreamName = null;
 	private static int streamSize = 0;
+	
+	private static long count = 0;
 
 	private AWSKinesisHelper() {
 		AWSCredentials credentials = null;
@@ -86,15 +89,18 @@ public class AWSKinesisHelper {
 	 * @param strData
 	 */
 	public void sendData(String strData) {
+		String sequenceNumberOfPreviousRecord = "0";
 		PutRecordRequest putRecordRequest = new PutRecordRequest();
 		putRecordRequest.setStreamName(kinesisStreamName);
 		putRecordRequest.setData(ByteBuffer.wrap(strData.getBytes()));
-		putRecordRequest.setPartitionKey(String.format("partitionKey"));
+		putRecordRequest.setPartitionKey(String.format("partitionKey-%d", count));
+		putRecordRequest.setSequenceNumberForOrdering(sequenceNumberOfPreviousRecord);
 		PutRecordResult putRecordResult = kinesisClient
 				.putRecord(putRecordRequest);
+		sequenceNumberOfPreviousRecord = putRecordResult.getSequenceNumber();
 		System.out.println("Successfully putRecord, partition key: "
 				+ putRecordRequest.getPartitionKey() + ", ShardID: "
-				+ putRecordResult.getShardId());
+				+ putRecordResult.getShardId() + " Data:" + strData + " SeqNo." + sequenceNumberOfPreviousRecord);
 	}
 
 	/**

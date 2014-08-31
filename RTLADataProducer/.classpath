@@ -2,23 +2,7 @@
 <classpath>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.7"/>
-	<classpathentry kind="var" path="AWS_3rd_commons_codec"/>
-	<classpathentry kind="var" path="AWS_3rd_commons_logging"/>
-	<classpathentry kind="var" path="AWS_3rd_freemarker"/>
-	<classpathentry kind="var" path="AWS_3rd_jackson_annotations"/>
-	<classpathentry kind="var" path="AWS_3rd_jackson_core"/>
-	<classpathentry kind="var" path="AWS_3rd_jackson_databind"/>
-	<classpathentry kind="var" path="AWS_3rd_javamail"/>
-	<classpathentry kind="var" path="AWS_3rd_joda_time"/>
-	<classpathentry kind="var" path="AWS_3rd_stax_api"/>
-	<classpathentry kind="var" path="AWS_3rd_stax_ri"/>
-	<classpathentry kind="var" path="AWS_LIB"/>
-	<classpathentry kind="var" path="AWS_3rd_aspectj/aspectjrt.jar"/>
-	<classpathentry kind="var" path="AWS_3rd_aspectj/aspectjweaver.jar"/>
-	<classpathentry kind="var" path="AWS_3rd_httpclient/httpclient-4.2.3.jar"/>
-	<classpathentry kind="var" path="AWS_3rd_httpclient/httpcore-4.2.jar"/>
-	<classpathentry kind="var" path="AWS_3rd_spring/spring-beans-3.0.7.jar"/>
-	<classpathentry kind="var" path="AWS_3rd_spring/spring-context-3.0.7.jar"/>
-	<classpathentry kind="var" path="AWS_3rd_spring/spring-core-3.0.7.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/AWS_3RD_LIB"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/AWS_LIB"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

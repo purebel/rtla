@@ -1,7 +1,12 @@
 package com.rtla.sample;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.List;
+import java.util.StringTokenizer;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -20,11 +25,14 @@ import com.amazonaws.services.kinesis.model.ListStreamsResult;
 import com.amazonaws.services.kinesis.model.PutRecordRequest;
 import com.amazonaws.services.kinesis.model.PutRecordResult;
 import com.amazonaws.services.kinesis.model.ResourceInUseException;
+import com.amazonaws.util.json.JSONException;
+import com.amazonaws.util.json.JSONObject;
 import com.rtla.helper.AWSKinesisHelper;
 
 public class RTLASample {
 
 	static AmazonKinesisClient kinesisClient = null;
+	static AWSKinesisHelper helper = null;
 	private static final Log LOG = LogFactory.getLog(AmazonKinesisClient.class);
 
 	private static void init() throws Exception {
@@ -44,19 +52,59 @@ public class RTLASample {
 	}
 
 	public static void main(String[] args) throws Exception {
-		AWSKinesisHelper helper = AWSKinesisHelper.getInstance();
-		helper.prepareStream("RTLocation", 1);
-		for (int j = 0; j < 50000; j++) {
-			helper.sendData("RTLocation + " + j);
+		 helper = AWSKinesisHelper.getInstance();
+		 helper.prepareStream("RTLA_JASON", 1);
+		/*
+		 * Test data for (int j = 0; j < 50000; j++) {
+		 * helper.sendData("RTLA_JASON + " + j); }
+		 */
+		// helper.cleanUp();
+		parseRecordFromFile("movement_test.csv");
+	}
+
+	public static void parseRecordFromFile(String filename) {
+		try {
+			File fileCSV = new File(filename);
+			BufferedReader br = new BufferedReader(new FileReader(fileCSV));
+
+			String currentLine = "";
+			JSONObject eventObj; 
+			while ((currentLine = br.readLine()) != null) {
+				eventObj = new JSONObject();
+				LOG.info(currentLine);
+				
+				String[] lineTokens = currentLine.split(",");
+				eventObj.put("itemNo", lineTokens[0]);
+				eventObj.put("deviceId", lineTokens[1]);//MAC 
+				eventObj.put("entity", lineTokens[2]);//
+				eventObj.put("referenceMarkerName", lineTokens[3]);//
+				eventObj.put("unit", lineTokens[4]);//coor unit "FET"
+				eventObj.put("coor_x", lineTokens[5]);//x
+				eventObj.put("coor_y", lineTokens[6]);//y
+				eventObj.put("locationMapHierarchy", lineTokens[7]);//Location
+				eventObj.put("moveDistanceInFt", lineTokens[8]);//move distance
+				eventObj.put("subscriptionName", lineTokens[9]);//
+				eventObj.put("type", lineTokens[10]);//
+				eventObj.put("timestamp", lineTokens[11]);//ts
+				
+				helper.sendData(eventObj.toString());
+				LOG.info("Send to Kinesis:" + eventObj.toString(4));
+			}
+			br.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch( JSONException e){
+			e.printStackTrace();
 		}
-		//helper.cleanUp();
+
 	}
 
 	public static void main1(String[] args) throws Exception {
 		init();
 		LOG.info("Kinesis Client created succesfully!");
 
-		final String rtlaStreamName = "RTLocation";
+		final String rtlaStreamName = "RTLA_JASON";
 		final Integer rtlaStreamSize = 1;
 
 		// Create Stream
@@ -121,8 +169,7 @@ public class RTLASample {
 
 	private static void waitForStreamToBecomeAvailable(String myStreamName) {
 
-		System.out.println("Waiting for " + myStreamName
-				+ " to become ACTIVE...");
+		LOG.info("Waiting for " + myStreamName + " to become ACTIVE ...");
 
 		long startTime = System.currentTimeMillis();
 		long endTime = startTime + (10 * 60 * 1000);
@@ -143,7 +190,7 @@ public class RTLASample {
 
 				String streamStatus = describeStreamResponse
 						.getStreamDescription().getStreamStatus();
-				System.out.println("  - current state: " + streamStatus);
+				LOG.info("    - current state: " + streamStatus);
 				if (streamStatus.equals("ACTIVE")) {
 					return;
 				}
