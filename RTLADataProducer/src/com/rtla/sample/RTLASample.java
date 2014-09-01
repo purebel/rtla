@@ -5,7 +5,9 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.StringTokenizer;
 
 import org.apache.commons.logging.Log;
@@ -30,10 +32,19 @@ import com.amazonaws.util.json.JSONObject;
 import com.rtla.helper.AWSKinesisHelper;
 
 public class RTLASample {
+	
+	private static final int EVENT_MOVEMENT = 10001;
+	private static final int EVENT_PRESENCE = 10002;
+	
+	//Records
+	private static final HashMap<String, String> records = new HashMap<String, String>();
 
 	static AmazonKinesisClient kinesisClient = null;
 	static AWSKinesisHelper helper = null;
 	private static final Log LOG = LogFactory.getLog(AmazonKinesisClient.class);
+	
+	//To print the JSON string of all records
+//	private static StringBuffer sb = new StringBuffer();
 
 	private static void init() throws Exception {
 		AWSCredentials credentials = null;
@@ -52,17 +63,23 @@ public class RTLASample {
 	}
 
 	public static void main(String[] args) throws Exception {
-		 helper = AWSKinesisHelper.getInstance();
-		 helper.prepareStream("RTLA_JASON", 1);
+		records.put("movement", "movement_test.csv");
+		records.put("presence", "presence_test.csv");
+//		 helper = AWSKinesisHelper.getInstance();
+//		 helper.prepareStream("RTLA_JASON", 1);
 		/*
 		 * Test data for (int j = 0; j < 50000; j++) {
 		 * helper.sendData("RTLA_JASON + " + j); }
 		 */
 		// helper.cleanUp();
-		parseRecordFromFile("movement_test.csv");
+		parseRecordFromFile(EVENT_MOVEMENT, records.get("movement"));
+		parseRecordFromFile(EVENT_PRESENCE, records.get("presence"));
+		
+//		System.out.println(sb.toString());
 	}
 
-	public static void parseRecordFromFile(String filename) {
+	public static void parseRecordFromFile(int eventType, String filename) {
+		
 		try {
 			File fileCSV = new File(filename);
 			BufferedReader br = new BufferedReader(new FileReader(fileCSV));
@@ -74,21 +91,32 @@ public class RTLASample {
 				LOG.info(currentLine);
 				
 				String[] lineTokens = currentLine.split(",");
-				eventObj.put("itemNo", lineTokens[0]);
-				eventObj.put("deviceId", lineTokens[1]);//MAC 
 				eventObj.put("entity", lineTokens[2]);//
-				eventObj.put("referenceMarkerName", lineTokens[3]);//
-				eventObj.put("unit", lineTokens[4]);//coor unit "FET"
-				eventObj.put("coor_x", lineTokens[5]);//x
-				eventObj.put("coor_y", lineTokens[6]);//y
+				eventObj.put("deviceId", lineTokens[1]);//MAC 
 				eventObj.put("locationMapHierarchy", lineTokens[7]);//Location
-				eventObj.put("moveDistanceInFt", lineTokens[8]);//move distance
-				eventObj.put("subscriptionName", lineTokens[9]);//
-				eventObj.put("type", lineTokens[10]);//
-				eventObj.put("timestamp", lineTokens[11]);//ts
-				
-				helper.sendData(eventObj.toString());
-				LOG.info("Send to Kinesis:" + eventObj.toString(4));
+				JSONObject coorObj = new JSONObject();
+				coorObj.put("x", Float.parseFloat(lineTokens[5]));
+				coorObj.put("y", Float.parseFloat(lineTokens[6]));
+				coorObj.put("unit", lineTokens[4]);
+				eventObj.put("locationCoordinate", coorObj);
+				switch(eventType) {
+				case EVENT_MOVEMENT:
+					eventObj.put("type", "movement");
+					eventObj.put("subscriptionName", lineTokens[9]);//
+					eventObj.put("moveDistanceInFt", Float.parseFloat(lineTokens[8]));//move distance
+					eventObj.put("referenceMarkerName", lineTokens[3]);//
+					eventObj.put("timestamp", lineTokens[11]);//ts
+					break;
+				case EVENT_PRESENCE:
+					eventObj.put("type", "presence");
+					eventObj.put("subscriptionName", lineTokens[8]);//
+					eventObj.put("timestamp", lineTokens[10]);//ts
+					break;
+				}
+				//proObj.put("itemNo", lineTokens[0]);
+//				helper.sendData(eventObj.toString());
+				LOG.info("Send to Kinesis:\n" + eventObj.toString(4));
+//				sb.append(eventObj.toString(4)).append("\n");
 			}
 			br.close();
 		} catch (IOException e) {
