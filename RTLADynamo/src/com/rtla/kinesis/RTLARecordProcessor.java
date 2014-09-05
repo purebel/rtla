@@ -18,8 +18,12 @@ import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.profile.ProfileCredentialsProvider;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient;
 import com.amazonaws.services.dynamodbv2.model.AttributeValue;
+import com.amazonaws.services.dynamodbv2.model.ComparisonOperator;
+import com.amazonaws.services.dynamodbv2.model.Condition;
 import com.amazonaws.services.dynamodbv2.model.PutItemRequest;
 import com.amazonaws.services.dynamodbv2.model.PutItemResult;
+import com.amazonaws.services.dynamodbv2.model.QueryRequest;
+import com.amazonaws.services.dynamodbv2.model.QueryResult;
 import com.amazonaws.services.kinesis.clientlibrary.exceptions.InvalidStateException;
 import com.amazonaws.services.kinesis.clientlibrary.exceptions.ShutdownException;
 import com.amazonaws.services.kinesis.clientlibrary.exceptions.ThrottlingException;
@@ -43,6 +47,7 @@ public class RTLARecordProcessor implements IRecordProcessor {
 	
 	static String DBTableMSE = "MSE_JASON";//"EventMovement";
 	static String DBTableStat = "RTLA_STATS_DAILY_JASON";//Daily Statistic
+	static String DBTableHM = "QH_heatmap2";
 	
 	protected static AmazonDynamoDBClient client;
 	private static int coorxStep=1;
@@ -116,6 +121,11 @@ public class RTLARecordProcessor implements IRecordProcessor {
 					
 					//Daily statistics
 					uploadItemForStat(DBTableStat, data);
+//					uploadItemsToDynamo(DBTableMSE, data);					
+					//Daily statistics
+//					uploadItemForStat(DBTableStat, data);
+					//HeatMap 
+					uploadItemsForHeatMap(DBTableHM, data);
 					//
 					// Logic to process record goes here.
 					//
@@ -216,6 +226,30 @@ public class RTLARecordProcessor implements IRecordProcessor {
           			eventObj.getString("type") + "\n" +
           			eventObj.getString("timestamp") + "\n");
           	
+          	JSONObject locationObj = eventObj.getJSONObject("locationCoordinate");
+          	
+          	 
+          	int intCoorX = (int)Float.parseFloat(locationObj.getString("x"));
+          	int intCoorY = (int)Float.parseFloat(locationObj.getString("y"));
+          	String unit=locationObj.getString("unit");
+          	
+          	LOG.info("JSONObject with data:" + 
+          			eventObj.getString("deviceId") + "\n" + 
+          			eventObj.getString("entity") + "\n" + 
+          			unit + "\n" +
+          			intCoorX + "\n" +
+          			intCoorY + "\n" +
+//          			eventObj.getString("unit") + "\n" +
+//          			eventObj.getString("coor_x") + "\n" +
+//          			eventObj.getString("coor_y") + "\n" +
+//          			eventObj.getString("moveDistanceInFt") + "\n" +
+          			eventObj.getString("locationMapHierarchy") + "\n" +
+ //         			eventObj.getString("referenceMarkerName") + "\n" +
+          			eventObj.getString("subscriptionName") + "\n" +
+          			eventObj.getString("type") + "\n" +
+          			eventObj.getString("timestamp") + "\n");
+
+          	
           	Map<String, AttributeValue> item = new HashMap<String, AttributeValue>();
           	item.put("date",  new AttributeValue().withS(eventObj.getString("timestamp").substring(0, 10)));
           	item.put("mac", new AttributeValue().withS(eventObj.getString("deviceId")));
@@ -246,20 +280,40 @@ private static void uploadItemsToDynamo(String tableName, String data) {
           			eventObj.getString("coor_y") + "\n" +
           			eventObj.getString("locationMapHierarchy") + "\n" +
           			eventObj.getString("referenceMarkerName") + "\n" +
+          	
+          	JSONObject locationObj = eventObj.getJSONObject("locationCoordinate");
+          	String type=eventObj.getString("type");
+          	String CoorX = (locationObj.getString("x"));
+          	String CoorY = (locationObj.getString("y"));
+          	int intCoorX = (int)Float.parseFloat(locationObj.getString("x"));
+          	int intCoorY = (int)Float.parseFloat(locationObj.getString("y"));
+          	String unit=locationObj.getString("unit");
+          	
+          	LOG.info("JSONObject with data:" + 
+          			eventObj.getString("deviceId") + "\n" + 
+          			eventObj.getString("entity") + "\n" + 
+          			unit + "\n" +
+          			intCoorX + "\n" +
+          			intCoorY + "\n" +
+//          			eventObj.getString("unit") + "\n" +
+//          			eventObj.getString("coor_x") + "\n" +
+//          			eventObj.getString("coor_y") + "\n" +
+          			eventObj.getString("locationMapHierarchy") + "\n" +
+//          			eventObj.getString("referenceMarkerName") + "\n" +
           			eventObj.getString("subscriptionName") + "\n" +
           			eventObj.getString("type") + "\n" +
           			eventObj.getString("timestamp") + "\n");
           	
-          	int intCoorX = (int)Float.parseFloat(eventObj.getString("coor_x"));
-          	int intCoorY = (int)Float.parseFloat(eventObj.getString("coor_y"));
-          	String districtStr = intCoorX + "-" + intCoorY;
+          	String districtStr = intCoorX/coorxStep + "-" + intCoorY/cooryStep;
           	LOG.info("districtStr:" + districtStr);
           	Map<String, AttributeValue> item = new HashMap<String, AttributeValue>();
           	item.put("mac", new AttributeValue().withS(eventObj.getString("deviceId")));
           	item.put("ts", new AttributeValue().withS(eventObj.getString("timestamp")));
-          	item.put("coorx", new AttributeValue().withS(eventObj.getString("coor_x")));
-          	item.put("coory", new AttributeValue().withS(eventObj.getString("coor_y")));
-          	item.put("movement", new AttributeValue().withS(eventObj.getString("moveDistanceInFt")));
+          	item.put("coorx", new AttributeValue().withS(/*eventObj.getString("coor_x")*/CoorX));
+          	item.put("coory", new AttributeValue().withS(/*eventObj.getString("coor_y")*/CoorY));
+            if(type.compareTo("movement")==0)	{
+          	  item.put("movement", new AttributeValue().withS(eventObj.getString("moveDistanceInFt")));
+            }
           	item.put("district", new AttributeValue().withS(districtStr));
           	PutItemRequest itemRequest = new PutItemRequest().withTableName(tableName).withItem(item);
             PutItemResult itemResult = client.putItem(itemRequest);
@@ -271,5 +325,120 @@ private static void uploadItemsToDynamo(String tableName, String data) {
         } 
 
     }
+
+private static void uploadItemsForHeatMap(String tableName, String data) {
+    
+    try {
+      	LOG.info("UploadItem HeatMap DB:" + tableName + " with Item:" + data);
+      	
+      	JSONObject eventObj = JSONObject.fromObject(data);
+      	JSONObject locationObj = eventObj.getJSONObject("locationCoordinate");
+
+      	int intCoorX = (int)Float.parseFloat(locationObj.getString("x"));
+      	int intCoorY = (int)Float.parseFloat(locationObj.getString("y"));
+      	String unit=locationObj.getString("unit");
+      	
+      	LOG.info("JSONObject with data:" + 
+      			eventObj.getString("deviceId") + "\n" + 
+      			eventObj.getString("entity") + "\n" + 
+      			unit + "\n" +
+      			intCoorX + "\n" +
+      			intCoorY + "\n" +
+      			eventObj.getString("locationMapHierarchy") + "\n" +
+      			eventObj.getString("subscriptionName") + "\n" +
+      			eventObj.getString("type") + "\n" +
+      			eventObj.getString("timestamp") + "\n");
+      	
+
+      	String districtStr = intCoorX/coorxStep + "-" + intCoorY/cooryStep;
+      	LOG.info("districtStr:" + districtStr);
+      	String[] tsArr=eventObj.getString("timestamp").split(" ");
+      	String curDate=tsArr[0];
+      	String tsCode=curDate;
+      	LOG.info("tsCode:" + tsCode);      	
+      	
+      	//get stats from table
+      	int cnt=getStats(tableName, districtStr, tsCode);
+    	System.out.println("getStats return" + "cnt=" + cnt);
+      	cnt++;
+    	System.out.println("increase by 1, and " + "cnt=" + cnt);
+      	String strCnt=Integer.toString(cnt);
+      	
+      	
+      	Map<String, AttributeValue> item = new HashMap<String, AttributeValue>();      	
+        item.put("district", new AttributeValue().withS(districtStr));
+        item.put("ts", new AttributeValue().withS(tsCode));
+        item.put("cnt", new AttributeValue().withS(strCnt));
+      	
+      	PutItemRequest itemRequest = new PutItemRequest().withTableName(tableName).withItem(item);
+        PutItemResult itemResult = client.putItem(itemRequest);
+        item.clear();
+            
+    }   catch (AmazonServiceException ase) {
+    	LOG.error("Failed to create item in " + tableName);
+    	ase.printStackTrace();
+    } 
+
+}
+private static int getStats(String tableName,String district, String tsCode) {
+	int stats=0;
+	
+	Condition hashKeyCondition = new Condition()
+    .withComparisonOperator(ComparisonOperator.EQ)
+    .withAttributeValueList(new AttributeValue().withS(/*district*/tsCode));
+	
+	Condition rangeKeyCondition = new Condition()
+    .withComparisonOperator(ComparisonOperator.EQ)
+    .withAttributeValueList(new AttributeValue().withS(/*tsCode*/district));
+	
+Map<String, Condition> keyConditions = new HashMap<String, Condition>();
+keyConditions.put("ts", hashKeyCondition);
+keyConditions.put("district", rangeKeyCondition);            
+
+QueryRequest queryRequest = new QueryRequest()
+    .withTableName(tableName)
+    .withKeyConditions(keyConditions)
+    .withAttributesToGet("cnt");
+   
+	
+    
+    QueryResult result = client.query(queryRequest);
+
+    // Check the response.
+    for (Map<String, AttributeValue> item : result.getItems()) {
+        printItem(item);
+    }           
+    for (Map<String, AttributeValue> item : result.getItems()) {
+        for(Map.Entry<String, AttributeValue> item2 : item.entrySet()) {
+            String attributeName = item2.getKey();
+            AttributeValue value = item2.getValue();
+            String attr="cnt";
+        	System.out.println("getStats::" + "attributeName=" + attributeName + ", cmp="+attributeName.compareTo(attr));                        
+            if(attributeName.compareTo(attr)==0) {//TBD
+            	String strStats=(value.getS()==null?"0":value.getS());
+            	stats=Integer.parseInt(strStats);
+            	System.out.println("getStats::" + "cnt=" + stats);
+            	break;
+            }
+            
+        }
+    }
+	return stats;
+
+}
+
+private static void printItem(Map<String, AttributeValue> attributeList) {
+    for (Map.Entry<String, AttributeValue> item : attributeList.entrySet()) {
+        String attributeName = item.getKey();
+        AttributeValue value = item.getValue();
+        System.out.println(attributeName + " "
+                + (value.getS() == null ? "" : "S=[" + value.getS() + "]")
+                + (value.getN() == null ? "" : "N=[" + value.getN() + "]")
+                + (value.getB() == null ? "" : "B=[" + value.getB() + "]")
+                + (value.getSS() == null ? "" : "SS=[" + value.getSS() + "]")
+                + (value.getNS() == null ? "" : "NS=[" + value.getNS() + "]")
+                + (value.getBS() == null ? "" : "BS=[" + value.getBS() + "] \n"));
+    }
+}
 
 }

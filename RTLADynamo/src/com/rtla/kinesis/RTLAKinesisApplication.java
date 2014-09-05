@@ -17,7 +17,7 @@ import com.amazonaws.services.kinesis.clientlibrary.lib.worker.KinesisClientLibC
 import com.amazonaws.services.kinesis.clientlibrary.lib.worker.Worker;
 
 public class RTLAKinesisApplication {
-	private static final String DEFAULT_APP_NAME = "RTLAKinesisApplication_JASON";
+    private static final String DEFAULT_APP_NAME = "RTLAKinesisApplication_JASON";
     private static final String DEFAULT_STREAM_NAME = "RTLA_JASON";
 
     private static final String DEFAULT_KINESIS_ENDPOINT = "https://kinesis.us-east-1.amazonaws.com";

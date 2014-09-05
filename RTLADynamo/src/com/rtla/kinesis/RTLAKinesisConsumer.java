@@ -1,5 +1,6 @@
 package com.rtla.kinesis;
 
+
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
@@ -107,7 +108,7 @@ public class RTLAKinesisConsumer {
         
         
         private static void getRecords() {
-        	String StreamName="RTLA";
+        	String StreamName="RTLA_0901";
     		// Retrieve the Shards from a Stream
     		DescribeStreamRequest describeStreamRequest = new DescribeStreamRequest();
     		describeStreamRequest.setStreamName(StreamName);
@@ -198,27 +199,17 @@ public class RTLAKinesisConsumer {
             	JSONObject dataJson = JSONObject.fromObject(jsStr);
             	  
             	String type=dataJson.getString("type");
-                	
-            	JSONObject propertiesJ=dataJson.getJSONObject("properties");
+            	String deviceId=dataJson.getString("deviceId");
+              	System.out.println("Rec to JSON String:"+type); 
+              	JSONObject locationJ=dataJson.getJSONObject("locationCoordinate");  
 
-                JSONObject deviceIdJ=propertiesJ.getJSONObject("deviceId");
-            	String deviceId=deviceIdJ.getString("type");            	   
-            	   
-     	   
-            	JSONObject locationJ=propertiesJ.getJSONObject("locationCoordinate");
-            	JSONObject locationPropJ=locationJ.getJSONObject("properties");
-            	JSONObject coorx=locationPropJ.getJSONObject("x");
-            	String coorxVal =coorx.getString("type");
-            	JSONObject coory=locationPropJ.getJSONObject("y");
-            	String cooryVal =coory.getString("type");
-
+            	String coorxVal =Float.toString(locationJ.getLong("x"));
+            	String cooryVal =Float.toString(locationJ.getLong("y"));
+            	String timestamp=dataJson.getString("timestamp");
                 if(type.compareTo("movement")==0)	{
-             	   JSONObject moveDistanceInFtJ=propertiesJ.getJSONObject("moveDistanceInFt");
-             	   moveDistance=moveDistanceInFtJ.getString("type");  
+             	   moveDistance=dataJson.getString("moveDistanceInFt");  
                 }
              	   
-             	   JSONObject timestampJ=propertiesJ.getJSONObject("timestamp");
-             	   String timestamp=timestampJ.getString("type");   
              	   
                  	System.out.println("JSON to JAVA array.type="+type);
                  	System.out.println("JSON to JAVA array.mac="+deviceId);
