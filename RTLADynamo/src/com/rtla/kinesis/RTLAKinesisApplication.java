@@ -17,8 +17,8 @@ import com.amazonaws.services.kinesis.clientlibrary.lib.worker.KinesisClientLibC
 import com.amazonaws.services.kinesis.clientlibrary.lib.worker.Worker;
 
 public class RTLAKinesisApplication {
-	private static final String DEFAULT_APP_NAME = "RTLAKinesisApplication_QH";
-    private static final String DEFAULT_STREAM_NAME = "RTLA_0901";
+    private static final String DEFAULT_APP_NAME = "RTLAKinesisApplication";
+    private static final String DEFAULT_STREAM_NAME = "RTLA_demo";
 
     private static final String DEFAULT_KINESIS_ENDPOINT = "https://kinesis.us-east-1.amazonaws.com";
 
@@ -84,7 +84,7 @@ public class RTLAKinesisApplication {
         // ensure the JVM will refresh the cached IP values of AWS resources (e.g. service endpoints).
         java.security.Security.setProperty("networkaddress.cache.ttl" , "60");
 
-        String workerId = /*InetAddress.getLocalHost().getCanonicalHostName()*/"127.1.1.1"  + ":" + UUID.randomUUID();
+        String workerId = /*InetAddress.getLocalHost().getCanonicalHostName() */"127.1.1.1"+ ":" + UUID.randomUUID();
         LOG.info("Using workerId: " + workerId);
 
         // Get credentials from IMDS. If unsuccessful, get them from the credential profiles file.

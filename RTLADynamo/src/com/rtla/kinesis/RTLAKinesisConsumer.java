@@ -82,7 +82,7 @@ public class RTLAKinesisConsumer {
 	static Record rec;
   	static int coorxStep=1;
   	static int cooryStep=1;
-	static String DBTableName = "MSE";//"EventMovement";
+	static String DBTableName = "demo_raw";//"EventMovement";
 	
 	public static void main(String[] args) throws Exception{
 		// TODO Auto-generated method stub
@@ -108,7 +108,7 @@ public class RTLAKinesisConsumer {
         
         
         private static void getRecords() {
-        	String StreamName="RTLA_0901";
+        	String StreamName="RTLA_0911";
     		// Retrieve the Shards from a Stream
     		DescribeStreamRequest describeStreamRequest = new DescribeStreamRequest();
     		describeStreamRequest.setStreamName(StreamName);
